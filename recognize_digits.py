@@ -1,5 +1,5 @@
 # USAGE
-# python recognize_digits.py
+# python recognize_digits.py -i calculator.jpg -l 4 -s 5
 
 # import the necessary packages
 import argparse
@@ -146,6 +146,7 @@ height, width = thresh.shape
 vert_dilate3 = cv2.getStructuringElement(cv2.MORPH_RECT, ksize=(1, 3))
 thresh = cv2.dilate(thresh, vert_dilate3)
 thresh = cv2.erode(thresh, vert_dilate3)
+cv2.imwrite("save/example.png", thresh)
 
 # pad the image to prevent image border touching number
 # thresh = cv2.copyMakeBorder(thresh, skew, skew, skew, skew, cv2.BORDER_CONSTANT, None, (0, 0, 0))
@@ -184,14 +185,16 @@ vert_dilate2 = cv2.getStructuringElement(cv2.MORPH_RECT, ksize=(1, 2))
 for c in digitCnts:
     # extract the digit ROI
     (x, y, w, h) = cv2.boundingRect(c)
+    print("Selected contour : w={}, h={}, x={}, y={}".format(w, h, x, y))
     # manually override the width of number 1
     if w < 10:
         x -= 13 - w
         w = 13
+        print("  changed contour : w={}, h={}, x={}, y={}".format(w, h, x, y))
     roi = thresh[y:y + h, x:x + w]
 
-    # cv2.imshow("ROI", roi)
-    # cv2.waitKey(0)
+    cv2.imshow("ROI", roi)
+    cv2.waitKey(0)
 
     # compute the width and height of each of the 7 segments
     # we are going to examine
@@ -224,10 +227,10 @@ for c in digitCnts:
             segROI = cv2.dilate(segROI, vert_dilate2)
         total = cv2.countNonZero(segROI)
         area = (xB - xA) * (yB - yA)
-        # print(i, total / float(area))
-        # cv2.imshow("Segment ROI", segROI)
-        # cv2.waitKey(0)
-        # cv2.destroyWindow("Segment ROI")
+        print(i, total / float(area))
+        cv2.imshow("Segment ROI", segROI)
+        cv2.waitKey(0)
+        cv2.destroyWindow("Segment ROI")
         # if the total number of non-zero pixels is greater than
         # 35% of the area, mark the segment as "on"
         if total / float(area) > 0.5:
